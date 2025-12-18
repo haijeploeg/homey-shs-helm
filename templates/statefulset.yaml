@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  serviceName: {{ .Release.Name }}
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      hostNetwork: {{ .Values.hostNetwork }}
+{{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+{{- end }}
+      containers:
+        - name: homey-shs
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          ports:
+            - containerPort: {{ .Values.ports.http }}
+            - containerPort: {{ .Values.ports.https }}
+            - containerPort: {{ .Values.ports.bridgeV1 }}
+            - containerPort: {{ .Values.ports.bridgeV2 }}
+          env:
+            - name: PORT_SERVER_HTTP
+              value: "{{ .Values.ports.http }}"
+            - name: PORT_SERVER_HTTPS
+              value: "{{ .Values.ports.https }}"
+            - name: PORT_SERVER_BRIDGE_V1
+              value: "{{ .Values.ports.bridgeV1 }}"
+            - name: PORT_SERVER_BRIDGE_V2
+              value: "{{ .Values.ports.bridgeV2 }}"
+{{- if .Values.homeyLocalAddress }}
+            - name: HOMEY_LOCAL_ADDRESS
+              value: "{{ .Values.homeyLocalAddress }}"
+{{- end }}
+          securityContext:
+            capabilities:
+              add:
+{{- range .Values.securityContext.capabilities }}
+                - {{ . }}
+{{- end }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.ports.http }}
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.ports.http }}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          volumeMounts:
+            - name: data
+              mountPath: /homey/user
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - {{ .Values.persistence.accessMode }}
+{{- if .Values.persistence.storageClassName }}
+        storageClassName: {{ .Values.persistence.storageClassName }}
+{{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size }}

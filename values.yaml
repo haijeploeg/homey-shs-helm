@@ -1,0 +1,59 @@
+image:
+  repository: ghcr.io/athombv/homey-shs
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Use host network namespace (may be required for mDNS/Avahi in some environments)
+hostNetwork: false
+
+# Security context capabilities required for dbus and avahi-daemon
+securityContext:
+  capabilities:
+    - NET_ADMIN
+    - NET_RAW
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 1Gi
+  limits:
+    memory: 2Gi
+    # cpu: 1000m  # Uncomment to set CPU limit
+
+ports:
+  http: 4859
+  https: 4860
+  bridgeV1: 4861
+  bridgeV2: 4862
+
+homeyLocalAddress: null
+
+persistence:
+  enabled: true
+  size: 5Gi
+  storageClassName: ""  # Leave empty for default storage class
+  accessMode: ReadWriteOnce
+
+service:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  annotations: {}
+    # Example for MetalLB:
+    # metallb.universe.tf/address-pool: default
+    # metallb.universe.tf/loadBalancerIPs: 192.168.1.100
+
+# Optional: Pod Disruption Budget for production stability
+podDisruptionBudget:
+  enabled: false
+  maxUnavailable: 0
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: homey.example.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []

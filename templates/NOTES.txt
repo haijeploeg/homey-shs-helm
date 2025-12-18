@@ -1,0 +1,38 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Your Homey Self-Hosted release is named {{ .Release.Name }}.
+
+To learn more about the release, try:
+
+  $ helm status {{ .Release.Name }}
+  $ helm get all {{ .Release.Name }}
+
+🏠 Accessing Homey:
+
+{{- if eq .Values.service.type "LoadBalancer" }}
+  Get the LoadBalancer IP:
+
+  $ kubectl get svc {{ .Release.Name }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+
+  Once available, access Homey at:
+
+  HTTP:  http://<LOADBALANCER-IP>:{{ .Values.ports.http }}
+  HTTPS: https://<LOADBALANCER-IP>:{{ .Values.ports.https }}
+
+{{- else if eq .Values.service.type "NodePort" }}
+  Get the NodePort:
+
+  $ kubectl get svc {{ .Release.Name }}
+
+  Access Homey at:
+
+  HTTP:  http://<NODE-IP>:<NODE-PORT>
+  HTTPS: https://<NODE-IP>:<NODE-PORT>
+
+{{- else if eq .Values.service.type "ClusterIP" }}
+  Port forward to access locally:
+
+  $ kubectl port-forward svc/{{ .Release.Name }} {{ .Values.ports.http }}:{{ .Values.ports.http }}
+
+  Then access at: http://localhost:{{ .Values.ports.http }}
+{{- end }}

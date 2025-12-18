@@ -1,0 +1,21 @@
+---
+
+apiVersion: v2
+name: homey-shs
+description: A Helm chart for deploying Homey Self-Hosted in Kubernetes
+type: application
+version: 1.0.0
+appVersion: "latest"
+keywords:
+  - homey
+  - smart-home
+  - home-automation
+  - iot
+home: https://github.com/haijeploeg/homey-shs-helm
+sources:
+  - https://github.com/haijeploeg/homey-shs-helm
+  - https://homey.app
+maintainers:
+  - name: Haije Ploeg
+    url: https://github.com/haijeploeg
+icon: https://homey.app/favicon.ico
