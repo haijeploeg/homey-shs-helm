@@ -1,22 +1,92 @@
 ---
+name: Release Helm Chart
 
-name: release
-on: 
+on:
   push:
     branches:
       - main
     paths:
-      - 'charts/**'
-  release:
-    types: [published, created]
+      - 'Chart.yaml'
+
+env:
+  REGISTRY: ghcr.io
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
-      - name: Publish Helm charts
-        uses: stefanprodan/helm-gh-pages@master
         with:
-          token: ${{ secrets.CR_TOKEN }}
+          fetch-depth: 0
+
+      - name: Extract version from Chart.yaml
+        id: chart
+        run: |
+          VERSION=$(grep '^version:' Chart.yaml | awk '{print $2}')
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "tag=v${VERSION}" >> $GITHUB_OUTPUT
+          echo "Found version: ${VERSION}"
+
+      - name: Check if tag already exists
+        id: check_tag
+        run: |
+          if git rev-parse "v${{ steps.chart.outputs.version }}" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "⚠️  Tag v${{ steps.chart.outputs.version }} already exists, skipping"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "✅ Tag v${{ steps.chart.outputs.version }} does not exist, will create"
+          fi
+
+      - name: Stop if tag exists
+        if: steps.check_tag.outputs.exists == 'true'
+        run: |
+          echo "Tag already exists. Update Chart.yaml version to trigger a new release."
+          exit 0
+
+      - name: Install Helm
+        if: steps.check_tag.outputs.exists == 'false'
+        uses: azure/setup-helm@v4
+        with:
+          version: 'latest'
+
+      - name: Lint Helm chart
+        if: steps.check_tag.outputs.exists == 'false'
+        run: helm lint .
+
+      - name: Package Helm chart
+        if: steps.check_tag.outputs.exists == 'false'
+        run: helm package .
+
+      - name: Login to GHCR
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ${{ env.REGISTRY }} --username ${{ github.actor }} --password-stdin
+
+      - name: Push chart to GHCR
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          helm push homey-shs-${{ steps.chart.outputs.version }}.tgz oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts
+
+      - name: Create and push tag
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ steps.chart.outputs.version }}" -m "Release v${{ steps.chart.outputs.version }}"
+          git push origin "v${{ steps.chart.outputs.version }}"
+
+      - name: Create GitHub Release
+        if: steps.check_tag.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.chart.outputs.version }}
+          name: Release v${{ steps.chart.outputs.version }}
+          files: homey-shs-${{ steps.chart.outputs.version }}.tgz
+          draft: false
+          prerelease: false
+          generate_release_notes: true
