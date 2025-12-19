@@ -55,8 +55,8 @@ helm install homey homey-shs/homey-shs -f values.yaml
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `hostNetwork` | Use host network namespace | `false` |
-| `securityContext.capabilities` | Required capabilities | `[NET_ADMIN, NET_RAW]` |
+| `hostNetwork` | Use host network namespace | `true` |
+| `securityContext.privileged` | Run in privileged mode | `true` |
 | `resources.requests.memory` | Memory request | `1Gi` |
 | `resources.limits.memory` | Memory limit | `2Gi` |
 | `persistence.size` | Storage size | `5Gi` |
@@ -94,12 +94,12 @@ nodeSelector:
 
 ## Security
 
-This chart runs as **root** with `NET_ADMIN` and `NET_RAW` capabilities for:
+This chart runs in **privileged mode** with **host networking** and as **root** user. This is required for:
 - **dbus-daemon** - System message bus
-- **avahi-daemon** - mDNS/Bonjour service discovery
+- **avahi-daemon** - mDNS/Bonjour service discovery (requires multicast networking)
 - **rrdcached** - Database caching
 
-These minimal capabilities are required and significantly more secure than privileged mode.
+⚠️ **Security Note**: Privileged mode gives the container extensive access to the host. Only deploy in trusted environments.
 
 ## Upgrading
 
@@ -124,13 +124,13 @@ kubectl delete pvc data-homey-0
 
 ### Avahi Daemon Crashes
 Logs show `Service:avahi-daemon Exited with code 255`:
-- Verify `NET_ADMIN` and `NET_RAW` capabilities
-- Try `hostNetwork: true`
+- Ensure `privileged: true` is set
+- Ensure `hostNetwork: true` is enabled
 - Check cluster network policy allows multicast
 
 ### Permission Denied
-- Ensure container runs as root (no `runAsUser`)
-- Verify capabilities are set
+- Ensure `privileged: true` is set
+- Ensure container runs as root (default)
 - Check PersistentVolume permissions
 
 ### Service Not Accessible

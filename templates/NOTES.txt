@@ -36,3 +36,27 @@ To learn more about the release, try:
 
   Then access at: http://localhost:{{ .Values.ports.http }}
 {{- end }}
+
+📊 Monitoring:
+
+  Watch the pod status:
+  $ kubectl get pods -l app={{ .Release.Name }} -w
+
+  View logs:
+  $ kubectl logs {{ .Release.Name }}-0 -f
+
+⚙️  Configuration:
+
+{{- if .Values.hostNetwork }}
+  ⚠️  Host network is ENABLED - pod uses host networking
+{{- end }}
+{{- if .Values.securityContext.privileged }}
+  ⚠️  Privileged mode is ENABLED - container has extended host access
+{{- end }}
+
+  Storage: {{ .Values.persistence.size }}
+
+🔒 Security Note:
+
+  This deployment runs in privileged mode with host networking for
+  dbus-daemon and avahi-daemon support. Only deploy in trusted environments.
