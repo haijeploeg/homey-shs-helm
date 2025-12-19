@@ -3,14 +3,12 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 
-# Use host network namespace (may be required for mDNS/Avahi in some environments)
-hostNetwork: false
+# Use host network namespace (required for mDNS/Avahi service discovery)
+hostNetwork: true
 
-# Security context capabilities required for dbus and avahi-daemon
+# Security context - privileged mode required for dbus and avahi-daemon
 securityContext:
-  capabilities:
-    - NET_ADMIN
-    - NET_RAW
+  privileged: true
 
 resources:
   requests:

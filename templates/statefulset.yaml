@@ -43,11 +43,7 @@ spec:
               value: "{{ .Values.homeyLocalAddress }}"
 {{- end }}
           securityContext:
-            capabilities:
-              add:
-{{- range .Values.securityContext.capabilities }}
-                - {{ . }}
-{{- end }}
+            privileged: {{ .Values.securityContext.privileged }}
           livenessProbe:
             httpGet:
               path: /
