@@ -1,0 +1,30 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "baseBranches": [
+    "main"
+  ],
+  "dependencyDashboard": false,
+  "automerge": true,
+  "automergeType": "pr",
+  "rebaseWhen": "auto",
+  "packageRules": [
+    {
+      "matchManagers": ["helm-values"],
+      "groupName": "helm chart dependencies",
+      "bumpVersions": [
+        {
+          "name": "Bump chart version",
+          "matchStrings": ["version:\\s(?<version>[^\\s]+)"],
+          "bumpType": "minor"
+        }
+      ]
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions"
+    }
+  ]
+}
