@@ -6,6 +6,7 @@
   "baseBranches": [
     "main"
   ],
+  "prHourlyLimit": 10,
   "dependencyDashboard": false,
   "automerge": true,
   "automergeType": "pr",
