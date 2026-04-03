@@ -8,7 +8,10 @@ metadata:
 {{- end }}
 spec:
   type: {{ .Values.service.type }}
+  internalTrafficPolicy: {{ .Values.service.internalTrafficPolicy }}
+  {{- if or (eq .Values.service.type "LoadBalancer") (eq .Values.service.type "NodePort") }}
   externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy }}
+  {{- end }}
   selector:
     app: {{ .Release.Name }}
   ports:

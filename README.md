@@ -61,7 +61,9 @@ helm install homey homey-shs/homey-shs -f values.yaml
 | `resources.limits.memory` | Memory limit | `2Gi` |
 | `persistence.size` | Storage size | `5Gi` |
 | `persistence.storageClassName` | Storage class (empty = default) | `""` |
-| `service.type` | Service type | `LoadBalancer` |
+| `service.type` | Service type (`ClusterIP`, `NodePort`, `LoadBalancer`) | `ClusterIP` |
+| `service.internalTrafficPolicy` | Internal traffic policy (all types) | `Cluster` |
+| `service.externalTrafficPolicy` | External traffic policy (`NodePort`/`LoadBalancer` only) | `Local` |
 | `service.annotations` | Service annotations (e.g., MetalLB) | `{}` |
 | `podDisruptionBudget.enabled` | Enable PDB | `false` |
 | `ingress.enabled` | Enable ingress | `false` |

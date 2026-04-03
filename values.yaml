@@ -33,7 +33,8 @@ persistence:
   accessMode: ReadWriteOnce
 
 service:
-  type: LoadBalancer
+  type: ClusterIP
+  internalTrafficPolicy: Cluster
   externalTrafficPolicy: Local
   annotations: {}
     # Example for MetalLB:
