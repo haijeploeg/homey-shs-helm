@@ -20,7 +20,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -51,7 +51,7 @@ jobs:
 
       - name: Install Helm
         if: steps.check_tag.outputs.exists == 'false'
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@v5
         with:
           version: 'latest'
 
@@ -83,7 +83,7 @@ jobs:
 
       - name: Create GitHub Release
         if: steps.check_tag.outputs.exists == 'false'
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.chart.outputs.version }}
           name: Release v${{ steps.chart.outputs.version }}
