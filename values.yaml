@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/athombv/homey-shs
-  tag: 13.1.0
+  tag: 13.1.5
   pullPolicy: IfNotPresent
 
 # Use host network namespace (required for mDNS/Avahi service discovery)
